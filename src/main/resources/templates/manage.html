@@ -198,23 +198,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr th:each="mail : ${mails}">
                         <td class="ps-4 fw-bold text-dark">
-                            <i class="fas fa-france text-primary me-2"></i> Seoul 2026
+                            <i class="fas fa-plane text-primary me-2"></i>
+                            <span th:text="${mail.label}">Label</span>
                         </td>
-                        <td>
-                            seoul2026@travmail.com
+                        <td style="word-break: break-all; min-width: 150px;">
+                            <span th:text="${mail.newAddress}">Generated Email Address</span>
                         </td>
                         <td class="text-muted small">
-                            username@gmail.com
+                            <span th:text="${mail.user.email}">User Email</span>
                         </td>
                         <td class="text-end pe-4">
-                            <button class="btn-copy" onclick="alert('Copied!')" title="Copy Email">
-                                <i class="far fa-copy"></i>
-                            </button>
-                            <button class="btn-delete ms-1" onclick="alert('deleted!')" title="Delete Email">
-                                <i class="far fa-trash-alt"></i>
-                            </button>
+                            <button class="btn-delete ms-1" title="Delete"><i class="far fa-trash-alt"></i></button>
+                        </td>
                         </td>
                     </tr>
 
