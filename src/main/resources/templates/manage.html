@@ -210,8 +210,10 @@
                             <span th:text="${mail.user.email}">User Email</span>
                         </td>
                         <td class="text-end pe-4">
-                            <button class="btn-delete ms-1" title="Delete"><i class="far fa-trash-alt"></i></button>
-                        </td>
+                            <button class="btn-delete ms-1" title="Delete" 
+                                th:onclick="'deleteMail(' + ${mail.id} + ', \'' + ${mail.newAddress} + '\')'">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
                         </td>
                     </tr>
 
@@ -226,5 +228,31 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+       
+    function deleteMail(id, emailAddress) {
+        if (!confirm("Are you sure Are you sure you want to delete " + emailAddress + "? You will no longer receive emails at this address after deletion")) {
+            return;
+        }
+         // send delete request
+        fetch('/api/email/delete/' + id, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                alert("Your TravMail(" + emailAddress + ")is Successfully deleted.");
+                window.location.reload(); 
+            } else {
+                response.text().then(text => alert("Deletion Failed: " + text)).catch(() => alert("Failed to delete the email."));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Server Error");
+        });
+    }
+</script>
+
 </body>
 </html>
