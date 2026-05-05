@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration 
+@Configuration
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
@@ -19,27 +19,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(registry -> {
-            registry.requestMatchers("/").permitAll(); // everyone gets permit for the mainpage
-            registry.anyRequest().authenticated();     // need login for the rest
-        })
-            .oauth2Login(oauth2 -> oauth2
-                // use userservice when login
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(customOAuth2UserService) 
-                )
-                .defaultSuccessUrl("/",true) 
-            )
-            // logout
-            .logout(logout -> logout
-            .logoutUrl("/logout")       
-            .logoutSuccessUrl("/login")      
-            .invalidateHttpSession(true) 
-            .deleteCookies("JSESSIONID") 
-            .permitAll()
-            )
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(registry -> {
+                    registry.requestMatchers("/api/companion/**").permitAll(); // everyone gets permit for the mainpage
+                    registry.anyRequest().authenticated(); // need login for the rest
+                })
+                .oauth2Login(oauth2 -> oauth2
+                        // use userservice when login
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .defaultSuccessUrl("/", true))
+                // logout
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll())
 
-         .build();
-        }
+                .build();
     }
+}
