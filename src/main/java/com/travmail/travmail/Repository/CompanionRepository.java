@@ -22,4 +22,5 @@ public interface CompanionRepository extends JpaRepository<Companion, Long> {
 
     // check overlap
     boolean existsByTravMailAndEmail(TravMail travMail, String email);
+    
 }

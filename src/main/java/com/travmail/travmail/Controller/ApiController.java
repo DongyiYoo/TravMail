@@ -44,6 +44,11 @@ public class ApiController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiresAt) {
         if (principal == null)
             return "login";
+        // validate the expiry date
+        if (expiresAt.isBefore(LocalDate.now())) {
+            System.err.println("Validation Error: Expiry date cannot be in the past.");
+            return "redirect:/manage?error=invalid_date";
+        }
 
         String email = principal.getAttribute("email");
 
@@ -138,6 +143,7 @@ public class ApiController {
         String bodyHtml = request.getParameter("body-html");
         String bodyPlain = request.getParameter("body-plain");
 
+        
         System.out.println("Recipient: " + recipient);
 
         // find user from db and forward to gmail
@@ -147,7 +153,7 @@ public class ApiController {
 
             // ignore when travmail is paused
             if (mailInfo.isPaused()) {
-                System.out.println("⛔ This TravMail is paused. Ignoring email to: " + recipient);
+                System.out.println("This TravMail is paused. Ignoring email to: " + recipient);
                 return ResponseEntity.ok("Mail is paused");
             }
 
@@ -161,7 +167,9 @@ public class ApiController {
 
                 // add companions
                 if (mailInfo.getCompanions() != null && !mailInfo.getCompanions().isEmpty()) {
-                    mailInfo.getCompanions().forEach(comp -> recipientsList.add(comp.getEmail()));
+                    mailInfo.getCompanions().stream()
+                            .filter(comp -> "ACTIVE".equals(comp.getStatus())) // only to activated companions
+                            .forEach(comp -> recipientsList.add(comp.getEmail()));
                 }
 
                 String toAddresses = String.join(",", recipientsList);
@@ -175,7 +183,7 @@ public class ApiController {
 
                 // call mailgun api
                 kong.unirest.MultipartBody unirestRequest = kong.unirest.Unirest
-                        .post("https://api.mailgun.net/v3/" + mailgunDomain + "/messages")
+                        .post("https://api.eu.mailgun.net" + mailgunDomain + "/messages")
                         .basicAuth("api", mailgunApiKey)
                         .field("from", "TravMail <travmail.noreply@" + mailgunDomain + ">") // sender
                         .field("to", toAddresses)

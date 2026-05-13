@@ -116,6 +116,7 @@ public class EmailService {
 
     @Transactional
     public void removeCompanion(Long travMailId, String email) {
+        // find Travmail
         TravMail travMail = travMailRepository.findById(travMailId)
                 .orElseThrow(() -> new IllegalArgumentException("TravMail not found."));
 
@@ -123,6 +124,7 @@ public class EmailService {
         Companion companion = companionRepository.findByTravMailAndEmail(travMail, email)
                 .orElseThrow(() -> new IllegalArgumentException("Companion not found."));
 
+        travMail.getCompanions().remove(companion);
         companionRepository.delete(companion);
     }
 
