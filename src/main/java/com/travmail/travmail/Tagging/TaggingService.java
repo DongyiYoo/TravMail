@@ -16,8 +16,8 @@ public class TaggingService {
     private static final int THRESHOLD_MIN_SCORE = 8;
     private static final int THRESHOLD_MIN_GAP = 3;
 
-    public Result classify(String subject, String bodyPlain, String bodyHtml) {
-        String text = buildText(subject, bodyPlain, bodyHtml);
+    public Result classify(String subject, String bodyPlain, String bodyHtml, String sender) {
+        String text = buildText(subject, bodyPlain, bodyHtml, sender);
 
         EnumMap<Category, Integer> score = new EnumMap<>(Category.class);
         for (Category c : Category.values())
@@ -135,10 +135,41 @@ public class TaggingService {
         add(score, evidence, Category.ACTIVITIES, text, 6, "ticket", "booking for", "entry");
         add(score, evidence, Category.ACTIVITIES, text, 4, "activity", "experience");
 
+
+        // -----------------------
+        // SENDER
+        // -----------------------
+        String snd = normalize(sender);
+
+        // Restaurant
+        if (containsAny(snd, "opentable", "thefork", "tableagent", "catchtable")) {
+            bump(score, evidence, Category.DINING, 20, "sender: dining service (" + snd + ")");
+        }
+        // Transportation
+        if (containsAny(snd, "uber", "freenow", "bolt", "grab", "taxi")) {
+            bump(score, evidence, Category.GROUND_TRANSPORT, 20, "sender: ride service (" + snd + ")");
+        }
+        // Accom website
+        if (containsAny(snd, "airbnb", "booking.com", "agoda", "expedia", "hotel")) {
+            bump(score, evidence, Category.ACCOMMODATION, 20, "sender: accommodation service (" + snd + ")");
+        }
+        // Flights
+        if (containsAny(snd, "airline", "airways", "skyscanner", "flight")) {
+            bump(score, evidence, Category.FLIGHTS, 20, "sender: flight service (" + snd + ")");
+        }
+        // Car rental
+        if (containsAny(snd, "hertz", "avis", "enterprise", "sixt", "europcar", "rental")) {
+            bump(score, evidence, Category.CAR_RENTAL, 20, "sender: car rental service (" + snd + ")");
+        }
+        // Train
+        if (containsAny(snd, "trainline", "rail", "eurostar", "train")) {
+            bump(score, evidence, Category.RAIL, 20, "sender: rail service (" + snd + ")");
+        }
+
         // -----------------------
         // GENERAL
         // -----------------------
-        // "confirmation/booking/voucher/receipt"는 다목적이라 General에 약하게만 줌
+        // "confirmation/booking/voucher/receipt" adds to general
         add(score, evidence, Category.GENERAL, text, 2, "confirmation", "confirmed", "booking", "voucher", "receipt",
                 "itinerary");
 
@@ -170,12 +201,13 @@ public class TaggingService {
         return new Result(best, bestScore, score, evidence);
     }
 
-    private String buildText(String subject, String bodyPlain, String bodyHtml) {
+    private String buildText(String subject, String bodyPlain, String bodyHtml, String sender ) {
         String s = normalize(subject);
         String p = normalize(bodyPlain);
         String h = normalize(stripHtml(bodyHtml));
+        String snd = normalize(sender);
 
-        return (s + "\n" + p + "\n" + h).trim();
+        return (snd + "\n" + s + "\n" + p + "\n" + h).trim();
     }
 
     private String normalize(String s) {

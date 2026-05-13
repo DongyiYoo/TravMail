@@ -139,6 +139,7 @@ public class ApiController {
         // get data
         String recipient = request.getParameter("recipient");
         String sender = request.getParameter("sender");
+        String from = request.getParameter("from");
         String subject = request.getParameter("subject");
         String bodyHtml = request.getParameter("body-html");
         String bodyPlain = request.getParameter("body-plain");
@@ -174,16 +175,17 @@ public class ApiController {
 
                 String toAddresses = String.join(",", recipientsList);
                 System.out.println("Forwarding to: " + toAddresses);
+                String displaySender = (from != null && !from.isEmpty()) ? from : sender;
 
                 // add tagging on subject
-                Result result = taggingService.classify(subject, bodyPlain, bodyHtml);
-                String taggedSubject = "[TravMail] [" + result.category().display() + "] "
+                Result result = taggingService.classify(subject, bodyPlain, bodyHtml,displaySender);
+                String taggedSubject = "[" + result.category().display() + "] "
                         + (subject == null ? "" : subject);
                 System.out.println("Tag scores: " + result.scoreMap());
 
                 // call mailgun api
                 kong.unirest.MultipartBody unirestRequest = kong.unirest.Unirest
-                        .post("https://api.eu.mailgun.net" + mailgunDomain + "/messages")
+                        .post("https://api.eu.mailgun.net/v3/" + mailgunDomain + "/messages")
                         .basicAuth("api", mailgunApiKey)
                         .field("from", "TravMail <travmail.noreply@" + mailgunDomain + ">") // sender
                         .field("to", toAddresses)
@@ -192,10 +194,10 @@ public class ApiController {
 
                 // set up mail
                 if (bodyHtml != null && !bodyHtml.isEmpty()) {
-                    String header = "From: " + sender + "<br>" + "To: " + recipient + "</div>";
+                    String header = "From: " + displaySender + "<br>" + "To: " + recipient + "<br><br>";
                     unirestRequest.field("html", header + bodyHtml);
                 } else {
-                    unirestRequest.field("text", "From: " + sender + "\n\n" + (bodyPlain != null ? bodyPlain : ""));
+                    unirestRequest.field("text", "From: " + displaySender + "\n\n" + (bodyPlain != null ? bodyPlain : ""));
                 }
 
                 // file attachment

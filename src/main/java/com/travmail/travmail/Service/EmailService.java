@@ -84,7 +84,7 @@ public class EmailService {
 
         try {
             kong.unirest.HttpResponse<kong.unirest.JsonNode> request = kong.unirest.Unirest
-                    .post("https://api.mailgun.net/v3/" + mailgunDomain + "/messages")
+                    .post("https://api.eu.mailgun.net/v3/" + mailgunDomain + "/messages")
                     .basicAuth("api", mailgunApiKey)
                     .field("from", "TravMail <travmail.noreply@" + mailgunDomain + ">")
                     .field("to", companionEmail) // companion
