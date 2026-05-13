@@ -81,80 +81,6 @@
             vertical-align: middle;
             padding: 15px 10px;
         }
-
-        .badge-active {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .btn-copy {
-            color: #003366;
-            background: #eef2f7;
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-        }
-
-        .btn-copy:hover {
-            background: #dbe4ef;
-            color: #002244;
-        }
-
-        .btn-delete {
-            color: #dc3545;
-            background: #fff5f5;
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-        }
-
-        .btn-delete:hover {
-            background: #ffe0e0;
-        }
-
-        .btn-companion {
-            color: #0d6efd;
-            background: #e6f0ff;
-            border: none;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-        }
-
-        .btn-companion:hover {
-            background: #cce0ff;
-            color: #003366;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 0;
-            color: #999;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: #eee;
-        }
     </style>
 </head>
 
@@ -194,68 +120,89 @@
 
     <div class="container dashboard">
 
-        <div class="create-container">
+        <div class="create-container shadow-sm" style="margin-bottom: 80px;">
             <div class="row">
-
                 <div class="col-12 text-center mb-4">
                     <h3 class="create-title">Create a TravMail</h3>
-                    <p class="text-muted mb-0">Create a secure email for your hotel, flight, or tour booking.</p>
+                    <p class="text-muted mb-0">Create a secure email for your hotel, flight or tour booking.</p>
                 </div>
 
                 <div class="col-12">
-                    <div class="mx-auto" style="max-width: 600px;">
-                        <form action="/api/email/create" method="post" class="d-flex gap-2">
-                            <input type="text" name="label" class="form-control form-control-lg"
-                                placeholder="Enter here" required>
-                            <button type="submit" class="btn btn-generate">
+                    <div class="mx-auto" style="max-width: 650px;">
+                        <form action="/api/email/create" method="post"
+                            class="d-flex align-items-center bg-white border rounded-pill p-1 shadow-sm">
+
+                            <input type="text" name="label" class="form-control border-0 bg-transparent ps-4"
+                                placeholder="Trip Label (e.g. Seoul)" required
+                                style="flex: 1; box-shadow: none; font-size: 1.1rem;">
+
+                            <div class="vr mx-1" style="height: 30px; opacity: 0.2;"></div>
+
+                            <input type="date" name="expiresAt"
+                                class="form-control border-0 bg-transparent text-secondary px-3" required
+                                title="When does your trip end?"
+                                style="max-width: 150px; font-size: 0.95rem; box-shadow: none; cursor: pointer;">
+
+                            <button type="submit" class="btn btn-generate rounded-pill ms-1 px-4"
+                                style="padding-top: 10px; padding-bottom: 10px;">
                                 <i class="fas fa-magic"></i>
                             </button>
+
                         </form>
+                        <div class="mt-4">
+                            <span
+                                class="badge rounded-pill bg-light text-secondary border fw-normal px-3 py-2 shadow-sm"
+                                style="font-size: 0.85rem;">
+                                <i class="fas fa-clock me-1" style="color: #003366;"></i> The TravMail will
+                                automatically pause on the selected date.
+                            </span>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
-        <h4 class="mb-3 fw-bold text-secondary ps-2">Active TravMails</h4>
+        <div>
+            <h4 class="mb-3 fw-bold text-secondary ps-2">Active TravMails</h4>
 
-        <div class="create-container p-0 overflow-hidden">
-            <table class="table table-custom table-hover mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4">Label</th>
-                        <th>TravMail Address</th>
-                        <th>Forwarding To</th>
-                        <th class="text-end pe-4">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="mail : ${mails}">
-                        <td class="ps-4 fw-bold text-dark">
-                            <i class="fas fa-plane text-primary me-2"></i>
-                            <span th:text="${mail.label}">Label</span>
-                        </td>
-                        <td style="word-break: break-all; min-width: 150px;">
-                            <span th:text="${mail.newAddress}">Generated Email Address</span>
-                        </td>
-                        <td class="text-muted small">
-                            <span th:text="${mail.user.email}">User Email</span>
-                        </td>
-                        <td class="text-end pe-4">
-                            <button class="btn-companion" title="Add Companion"
-                                th:onclick="javascript:addCompanionMail([[${mail.id}]])">
-                                <i class="fas fa-user-plus"></i>
-                            </button>
+            <div class="create-container p-0 overflow-hidden">
+                <table class="table table-custom table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Label</th>
+                            <th>TravMail Address</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Setting</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="mail : ${mails}">
+                            <td class="ps-4 fw-bold text-dark">
+                                <i class="fas fa-plane text-primary me-2"></i>
+                                <span th:text="${mail.label}">Label</span>
+                            </td>
+                            <td style="word-break: break-all; min-width: 150px;">
+                                <span th:text="${mail.newAddress}">Generated Email Address</span>
+                            </td>
 
-                            <button class="btn-delete ms-1" title="Delete"
-                                th:onclick="javascript:deleteMail([[${mail.id}]], '[[${mail.newAddress}]]')">
-                                <i class="far fa-trash-alt"></i>
-                            </button>
-                        </td>
-                    </tr>
+                            <!-- Status -->
+                            <td class="fw-bold" th:classappend="${mail.paused ? 'text-danger' : 'text-success'}">
+                                <i class="fas fa-circle me-1" style="font-size: 0.5rem; vertical-align: middle;"></i>
+                                <span th:text="${mail.paused ? 'Inactive' : 'Active'}"></span>
+                            </td>
 
-                </tbody>
-            </table>
+                            <!-- settings -->
+                            <td class="text-end pe-4">
+                                <button class="btn btn-outline-primary rounded-circle btn-sm"
+                                    style="width: 35px; height: 35px;" data-bs-toggle="modal"
+                                    th:data-bs-target="'#manageModal-' + ${mail.id}" title="Settings">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="text-center text-muted mt-4 small">
@@ -264,33 +211,83 @@
 
     </div>
 
-    <!-- Invitation pop up -->
-    <div class="modal fade" id="companionPopup" tabindex="-1" aria-labelledby="companionPopupLabel" aria-hidden="true">
+    <!-- setting popup -->
+    <div class="modal fade" th:each="mail : ${mails}" th:id="'manageModal-' + ${mail.id}" tabindex="-1"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-light border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold" id="companionPopupLabel" style="color: #003366;">
-                        <i class="fas fa-user-friends me-2"></i>Invite Companion
+            <div class="modal-content border-0 shadow-lg">
+
+                <!-- header -->
+                <div class="modal-header bg-light border-bottom-0 pb-3">
+                    <h5 class="modal-title fw-bold" style="color: #003366;">
+                        <i class="fas fa-cog me-2"></i>Setting: <span th:text="${mail.label}">Label</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body pt-3">
-                    <p class="text-muted small mb-4">
-                        Enter your companion's email address. They will receive an invitation link to accept forwarding.
-                    </p>
-                    <div class="mb-3">
-                        <label for="companionEmail" class="form-label fw-bold text-secondary small">Email
-                            Address</label>
-                        <input type="email" class="form-control form-control-lg fs-6" id="companionEmail"
-                            placeholder="companion@example.com" required>
+
+                <div class="modal-body pt-2 px-4 pb-4">
+                    <!-- status -->
+                    <div
+                        class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-4 shadow-sm">
+                        <div>
+                            <h6 class="fw-bold mb-0" style="color: #003366;">Status</h6>
+                            <small class="text-muted"
+                                th:text="${mail.paused ? 'TravMail - ' + mail.label + ' is currently inactivated' : 'TravMail - ' + mail.label + ' is active'}"></small>
+
+                            <div class="mt-2" th:if="${mail.expiresAt != null}">
+                                <small class="text-secondary" style="font-size: 0.8rem;">
+                                    Automatically be inactivated on
+                                    <span class="fw-bold text-dark" th:text="${mail.expiresAt}">2026-05-10</span>.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                style="width: 3em; height: 1.5em; cursor: pointer;" th:checked="${!mail.paused}"
+                                th:onchange="togglePause([[${mail.id}]], [[${mail.paused}]])">
+                        </div>
                     </div>
-                    <!-- save the selected travmail id for adding companion -->
-                    <input type="hidden" id="targetTravMailId">
-                </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4"
-                        data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-generate px-4" onclick="sendInvitation()">Send Invite</button>
+
+                    <!-- invite companions -->
+                    <h6 class="fw-bold mb-2" style="color: #003366;"><i class="fas fa-user-friends me-2"></i>Invite
+                        Companion</h6>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary small mb-1">Email Address</label>
+                        <div class="input-group shadow-sm">
+                            <input type="email" class="form-control" th:id="'companionEmail-' + ${mail.id}"
+                                placeholder="companion@example.com">
+                            <button class="btn" style="background-color: #003366; color: white; white-space: nowrap;"
+                                type="button" th:onclick="sendInvitation([[${mail.id}]])">Send</button>
+                        </div>
+                    </div>
+
+                    <!-- companion list -->
+                    <ul class="list-group list-group-flush mb-4 border rounded shadow-sm">
+                        <!-- null check -->
+                        <li class="list-group-item bg-light text-muted text-center py-3"
+                            th:if="${mail.companions == null or #lists.isEmpty(mail.companions)}">
+                            <small>No companions added yet.</small>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            th:each="comp : ${mail.companions}">
+                            <span th:text="${comp.email}" class="text-dark fw-medium">email@example.com</span>
+                            <button class="btn btn-sm btn-outline-danger border-0"
+                                th:onclick="removeCompanion([[${mail.id}]], [[${comp.email}]])" title="Remove">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <hr class="my-4 text-muted">
+
+                    <!-- delete -->
+                    <div class="d-grid">
+                        <button class="btn btn-outline-danger text-start px-3 py-2"
+                            th:onclick="deleteMail([[${mail.id}]], [[${mail.newAddress}]])">
+                            <i class="far fa-trash-alt me-2"></i> Delete the TravMail Permanently
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -299,69 +296,73 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // delete travmail
         function deleteMail(id, emailAddress) {
             if (!confirm("Are you sure you want to delete " + emailAddress + "? You will no longer receive emails at this address after deletion")) {
                 return;
             }
-            // send delete request
-            fetch('/api/email/delete/' + id, {
-                method: 'DELETE'
-            })
+            fetch('/api/email/delete/' + id, { method: 'DELETE' })
                 .then(response => {
                     if (response.ok) {
-                        alert("Your TravMail(" + emailAddress + ")is Successfully deleted.");
+                        alert("Your TravMail (" + emailAddress + ") is successfully deleted.");
                         window.location.reload();
                     } else {
                         response.text().then(text => alert("Deletion Failed: " + text)).catch(() => alert("Failed to delete the email."));
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("Server Error");
-                });
+                }).catch(error => console.error('Error:', error));
         }
 
-        // popup msg
-        function addCompanionMail(travMailId) {
-            document.getElementById('targetTravMailId').value = travMailId;
-            document.getElementById('companionEmail').value = '';
-
-            // open pop up
-            var companionPopup = new bootstrap.Modal(document.getElementById('companionPopup'));
-            companionPopup.show();
-        }
-
-        // call api for sending invitation
-        function sendInvitation() {
-            const travMailId = document.getElementById('targetTravMailId').value;
-            const email = document.getElementById('companionEmail').value;
+        // invite companions
+        function sendInvitation(travMailId) {
+            const emailInput = document.getElementById('companionEmail-' + travMailId);
+            const email = emailInput.value;
 
             if (!email || !email.includes('@')) {
                 alert('Please enter a valid email address.');
                 return;
             }
 
-            fetch('/api/companion/invite', {
+            fetch('/api/email/companion/invite', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    'travMailId': travMailId,
-                    'email': email
-                })
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ 'travMailId': travMailId, 'email': email })
             })
                 .then(response => {
                     if (response.ok) {
                         alert('Invitation sent successfully! Waiting for the companion to accept.');
-
-                        // close pop up
-                        bootstrap.Modal.getInstance(document.getElementById('companionPopup')).hide();
-
-                        // page reload
+                        emailInput.value = '';
                         window.location.reload();
                     } else {
                         response.text().then(text => alert("Failed to send invitation: " + text)).catch(() => alert("Failed to send invitation."));
+                    }
+                }).catch(error => console.error('Error:', error));
+        }
+
+        // delete companions
+        function removeCompanion(travMailId, email) {
+            if (!confirm("Remove " + email + " from this TravMail?")) return;
+
+            fetch(`/api/email/companion/remove?travMailId=${travMailId}&email=${email}`, { method: 'DELETE' })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Companion removed successfully.');
+                        window.location.reload();
+                    } else {
+                        alert('Failed to remove companion.');
+                    }
+                }).catch(error => console.error('Error:', error));
+        }
+
+        // pause
+        function togglePause(travMailId, currentStatus) {
+            const newStatus = !currentStatus;
+            // call api
+            fetch(`/api/email/pause?travMailId=${travMailId}&pause=${newStatus}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to update status.');
                     }
                 })
                 .catch(error => {
