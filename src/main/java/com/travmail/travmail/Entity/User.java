@@ -19,7 +19,6 @@ public class User {
     @Column(name = "NAME")
     private String name;
 
-    @Lob
     @Column(name = "ACCESS_TOKEN", columnDefinition = "TEXT")
     private String accessToken;
 }

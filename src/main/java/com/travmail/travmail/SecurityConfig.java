@@ -1,6 +1,6 @@
 package com.travmail.travmail;
 
-import com.travmail.travmail.Service.CustomOAuth2UserService;
+import com.travmail.travmail.Service.CustomOidcUserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -9,11 +9,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration 
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
+    
+    private final CustomOidcUserService customOidcUserService;
 
     // get CustomOAuth2UserService
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
-        this.customOAuth2UserService = customOAuth2UserService;
+    public SecurityConfig(CustomOidcUserService customOidcUserService) {
+        this.customOidcUserService = customOidcUserService;
     }
 
     @Bean
@@ -28,7 +29,7 @@ public class SecurityConfig {
             .oauth2Login(oauth2 -> oauth2
                 // use userservice when login
                 .userInfoEndpoint(userInfo -> userInfo
-                    .userService(customOAuth2UserService) 
+                    .oidcUserService(customOidcUserService) 
                 )
                 .defaultSuccessUrl("/",true) 
             )
