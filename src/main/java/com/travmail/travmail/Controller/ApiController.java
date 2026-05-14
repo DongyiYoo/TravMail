@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,7 @@ public class ApiController {
 
     // create email
     @PostMapping("/create")
+    @Transactional
     public String createEmail(@AuthenticationPrincipal OAuth2User principal, @RequestParam String label,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate expiresAt) {
         if (principal == null)
@@ -63,6 +65,7 @@ public class ApiController {
             return "redirect:/manage";
 
         } catch (Exception e) {
+            e.printStackTrace();
             return "redirect:/manage?error=api_failure";
         }
     }
@@ -75,9 +78,11 @@ public class ApiController {
             return ResponseEntity.ok().body("Deleted successfully");
             // if ID doesnt exist
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         } catch (Exception e) {
             // Internal server error
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Deletion failed due to server error: " + e.getMessage());
         }
     }
@@ -116,6 +121,7 @@ public class ApiController {
             // check if the value matches
             return hexString.toString().equals(signature);
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -242,9 +248,11 @@ public class ApiController {
 
         } catch (IllegalStateException e) {
             // error when overlap
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             // other errors
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body("An error occurred: " + e.getMessage());
         }
     }
@@ -262,6 +270,7 @@ public class ApiController {
                     "<p>You will now receive forwarded emails from this TravMail.</p>" +
                     "</body></html>";
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return "<html><body><h1> Verification Failed</h1><p>" + e.getMessage() + "</p></body></html>";
         }
     }
@@ -275,8 +284,10 @@ public class ApiController {
             emailService.pause(travMailId, pause);
             return ResponseEntity.ok("Status updated successfully.");
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body("Failed to update status: " + e.getMessage());
         }
     }
@@ -290,8 +301,10 @@ public class ApiController {
             emailService.removeCompanion(travMailId, email);
             return ResponseEntity.ok("Companion removed successfully.");
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body("Failed to remove companion: " + e.getMessage());
         }
     }
