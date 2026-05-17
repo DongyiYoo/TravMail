@@ -22,6 +22,14 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
+import org.springframework.ui.Model;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Iterator;
+import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
+import kong.unirest.MultipartBody;
+import kong.unirest.Unirest;
 
 @Controller
 @RequestMapping("/api/email")
@@ -150,7 +158,6 @@ public class ApiController {
         String bodyHtml = request.getParameter("body-html");
         String bodyPlain = request.getParameter("body-plain");
 
-        
         System.out.println("Recipient: " + recipient);
 
         // find user from db and forward to gmail
@@ -184,13 +191,13 @@ public class ApiController {
                 String displaySender = (from != null && !from.isEmpty()) ? from : sender;
 
                 // add tagging on subject
-                Result result = taggingService.classify(subject, bodyPlain, bodyHtml,displaySender);
+                Result result = taggingService.classify(subject, bodyPlain, bodyHtml, displaySender);
                 String taggedSubject = "[" + result.category().display() + "] "
                         + (subject == null ? "" : subject);
                 System.out.println("Tag scores: " + result.scoreMap());
 
                 // call mailgun api
-                kong.unirest.MultipartBody unirestRequest = kong.unirest.Unirest
+                MultipartBody unirestRequest = Unirest
                         .post("https://api.eu.mailgun.net/v3/" + mailgunDomain + "/messages")
                         .basicAuth("api", mailgunApiKey)
                         .field("from", "TravMail <travmail.noreply@" + mailgunDomain + ">") // sender
@@ -198,21 +205,33 @@ public class ApiController {
                         .field("h:Reply-To", sender) // reply to sender
                         .field("subject", taggedSubject);
 
+                // unsubscribe link
+                String baseUrl = "https://travmail.online";
+                String unsubLinkUrl = baseUrl + "/api/email/companion/unsubscribe?travMailId=" + mailInfo.getId()
+                        + "&email=%recipient%";
+
+                // text for unsub
+                String unsubHtml = "<br><br><hr><p style='font-size:12px; color:gray;'>You are receiving this email as a companion of TravMail. "
+                        + "<a href='" + unsubLinkUrl + "'>Click here to Unsubscribe</a></p>";
+                String unsubPlain = "\n\n---\nYou are receiving this email as a companion of TravMail. To unsubscribe, visit: "
+                        + unsubLinkUrl;
+
                 // set up mail
                 if (bodyHtml != null && !bodyHtml.isEmpty()) {
                     String header = "From: " + displaySender + "<br>" + "To: " + recipient + "<br><br>";
-                    unirestRequest.field("html", header + bodyHtml);
+                    unirestRequest.field("html", header + bodyHtml + unsubHtml);
                 } else {
-                    unirestRequest.field("text", "From: " + displaySender + "\n\n" + (bodyPlain != null ? bodyPlain : ""));
+                    unirestRequest.field("text",
+                            "From: " + displaySender + "\n\n" + (bodyPlain != null ? bodyPlain : "") + unsubPlain);
                 }
 
                 // file attachment
-                if (request instanceof org.springframework.web.multipart.MultipartHttpServletRequest) {
-                    org.springframework.web.multipart.MultipartHttpServletRequest multipartRequest = (org.springframework.web.multipart.MultipartHttpServletRequest) request;
-                    java.util.Iterator<String> fileNames = multipartRequest.getFileNames();
+                if (request instanceof MultipartHttpServletRequest) {
+                    MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+                    Iterator<String> fileNames = multipartRequest.getFileNames();
 
                     while (fileNames.hasNext()) {
-                        org.springframework.web.multipart.MultipartFile file = multipartRequest
+                        MultipartFile file = multipartRequest
                                 .getFile(fileNames.next());
                         if (file != null && !file.isEmpty()) {
                             // send file through API
@@ -223,7 +242,7 @@ public class ApiController {
                 }
 
                 // send
-                kong.unirest.HttpResponse<kong.unirest.JsonNode> response = unirestRequest.asJson();
+                HttpResponse<JsonNode> response = unirestRequest.asJson();
                 System.out.println("Email forwarded successfully via Mailgun API! Status: " + response.getStatus());
 
             } catch (Exception e) {
@@ -259,19 +278,22 @@ public class ApiController {
 
     // email verification
     @GetMapping("/companion/verify")
-    public String verifyCompanion(@RequestParam("token") String token) {
+    public String verifyCompanion(@RequestParam("token") String token, Model model) {
         try {
             // check token and change status
             emailService.verifyCompanion(token);
 
-            return "<html><body>" +
-                    "<h1>Invitation Accepted!</h1>" +
-                    "<p>You have been successfully added as a companion.</p>" +
-                    "<p>You will now receive forwarded emails from this TravMail.</p>" +
-                    "</body></html>";
+            model.addAttribute("status", "success");
+            model.addAttribute("title", "Invitation Accepted");
+            model.addAttribute("message", "You have been successfully added as a companion.");
+            return "result";
+
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            return "<html><body><h1> Verification Failed</h1><p>" + e.getMessage() + "</p></body></html>";
+            model.addAttribute("status", "fail");
+            model.addAttribute("title", "Verification Failed");
+            model.addAttribute("message", e.getMessage());
+            return "result";
         }
     }
 
@@ -306,6 +328,30 @@ public class ApiController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("Failed to remove companion: " + e.getMessage());
+        }
+    }
+
+    // unsubscripbe
+    @GetMapping("/companion/unsubscribe")
+    public String unsubscribeCompanion(
+            @RequestParam("travMailId") Long travMailId,
+            @RequestParam("email") String email, Model model) {
+        try {
+            emailService.removeCompanion(travMailId, email);
+            //succeed
+            model.addAttribute("status", "success");
+            model.addAttribute("title", "Unsubscribed Successfully");
+            model.addAttribute("message",
+                    "You have been removed from the companion list. You will no longer receive emails.");
+            return "result";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            //failed
+            model.addAttribute("status", "fail");
+            model.addAttribute("title", "Failed to Unsubscribe");
+            model.addAttribute("message", e.getMessage());
+            return "result";
         }
     }
 

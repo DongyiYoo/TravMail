@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Result</title>
+
+</head>
+
+<body>
+
+    <script th:inline="javascript">
+        setTimeout(function() {
+            //converts data from backend to js variable
+            var title = /*[[${title}]]*/ 'Result';
+            var message = /*[[${message}]]*/ 'Message';
+            
+            // popup msg then close
+            alert(title + "\n" + message);
+            window.close();
+        }, 100);
+    </script>
+</body>
+
+</html>

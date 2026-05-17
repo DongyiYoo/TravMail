@@ -78,7 +78,7 @@ public class EmailService {
         companionRepository.save(companion);
 
         // generate verification link
-        String inviter = travMail.getUser().getEmail();
+        String inviter = travMail.getUser().getName();
         String verificationLink = baseUrl + "/api/email/companion/verify?token=" + companion.getVerificationToken();
         System.out.println("Send Email to: [" + companionEmail + "]" + verificationLink);
 
