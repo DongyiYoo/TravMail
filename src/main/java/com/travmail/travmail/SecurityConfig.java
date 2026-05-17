@@ -22,7 +22,7 @@ public class SecurityConfig {
         return http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(registry -> {
-            registry.requestMatchers("/", "/images/**", "/css/**", "/js/**","/api/email/**,").permitAll();
+            registry.requestMatchers("/", "/images/**", "/css/**", "/js/**","/api/email/**").permitAll();
             // everyone gets permit for the mainpage, imgs, css, js
             registry.anyRequest().authenticated();     // need login for the rest
         })
